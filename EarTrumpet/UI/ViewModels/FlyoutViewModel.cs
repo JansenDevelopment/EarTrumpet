@@ -23,11 +23,13 @@ public class FlyoutViewModel : BindableBase, IPopupHostViewModel, IFlyoutViewMod
     public string DeviceNameText => Devices.Count > 0 ? Devices[0].DisplayName : null;
     public FlyoutViewState State { get; private set; }
     public ObservableCollection<DeviceViewModel> Devices { get; private set; }
+    public DeviceViewModel RecordingDevice { get; private set; }
     public ICommand ExpandCollapse { get; private set; }
     public InputType LastInput { get; private set; }
     public ICommand DisplaySettingsChanged { get; }
 
     private readonly DeviceCollectionViewModel _mainViewModel;
+    private readonly DeviceCollectionViewModel _recordingViewModel;
     private readonly DispatcherTimer _deBounceTimer;
     private readonly Dispatcher _currentDispatcher = Dispatcher.CurrentDispatcher;
     private readonly Action _returnFocusToTray;
@@ -36,7 +38,7 @@ public class FlyoutViewModel : BindableBase, IPopupHostViewModel, IFlyoutViewMod
     private MouseHook _mh;
     private Rect _winRect;
 
-    public FlyoutViewModel(DeviceCollectionViewModel mainViewModel, Action returnFocusToTray, AppSettings settings)
+    public FlyoutViewModel(DeviceCollectionViewModel mainViewModel, DeviceCollectionViewModel recordingViewModel, Action returnFocusToTray, AppSettings settings)
     {
         _settings = settings;
         IsExpanded = _settings.IsExpanded;
@@ -47,6 +49,11 @@ public class FlyoutViewModel : BindableBase, IPopupHostViewModel, IFlyoutViewMod
         _mainViewModel.DefaultChanged += OnDefaultPlaybackDeviceChanged;
         _mainViewModel.AllDevices.CollectionChanged += AllDevices_CollectionChanged;
         AllDevices_CollectionChanged(null, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+
+        _recordingViewModel = recordingViewModel;
+        _recordingViewModel.DefaultChanged += (_, __) => UpdateRecordingDevice();
+        _settings.ShowRecordingDevicesChanged += (_, __) => UpdateRecordingDevice();
+        UpdateRecordingDevice();
 
         // This timer is used to enable clicking on the tray icon while the flyout is open, and not causing a
         // rapid hide and show cycle.  This time represents the minimum time between which the flyout may be opened.
@@ -183,6 +190,13 @@ public class FlyoutViewModel : BindableBase, IPopupHostViewModel, IFlyoutViewMod
         RaiseDevicesChanged();
     }
 
+    private void UpdateRecordingDevice()
+    {
+        RecordingDevice = _settings.ShowRecordingDevices ? _recordingViewModel.Default : null;
+        RaisePropertyChanged(nameof(RecordingDevice));
+        InvalidateWindowSize();
+    }
+
     private void UpdateTextVisibility()
     {
         // Show display name on only the "top" device, which handles Expanded and Collapsed.
@@ -246,6 +260,7 @@ public class FlyoutViewModel : BindableBase, IPopupHostViewModel, IFlyoutViewMod
         {
             case FlyoutViewState.Open:
                 _mainViewModel.OnTrayFlyoutShown();
+                _recordingViewModel.OnTrayFlyoutShown();
 
                 if (_closedDuringOpen)
                 {
@@ -255,6 +270,7 @@ public class FlyoutViewModel : BindableBase, IPopupHostViewModel, IFlyoutViewMod
                 break;
             case FlyoutViewState.Closing_Stage1:
                 _mainViewModel.OnTrayFlyoutHidden();
+                _recordingViewModel.OnTrayFlyoutHidden();
                 Dialog.IsVisible = false;
 
                 if (LastInput == InputType.Keyboard && !IsExpandingOrCollapsing)

@@ -1451,6 +1451,15 @@ namespace EarTrumpet.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Show recording devices in the flyout and tray menu.
+        /// </summary>
+        public static string SettingsShowRecordingDevices {
+            get {
+                return ResourceManager.GetString("SettingsShowRecordingDevices", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to EarTrumpet Settings.
         /// </summary>
         public static string SettingsTitle {

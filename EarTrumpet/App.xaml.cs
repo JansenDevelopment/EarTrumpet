@@ -53,6 +53,10 @@ public sealed partial class App : IDisposable
     {
         get; private set;
     }
+    public DeviceCollectionViewModel RecordingCollectionViewModel
+    {
+        get; private set;
+    }
 
     private static readonly Stopwatch s_appTimer = Stopwatch.StartNew();
     private FlyoutViewModel _flyoutViewModel;
@@ -108,12 +112,13 @@ public sealed partial class App : IDisposable
         var deviceManager = WindowsAudioFactory.Create(AudioDeviceKind.Playback);
         deviceManager.Loaded += (_, __) => CompleteStartup();
         CollectionViewModel = new DeviceCollectionViewModel(deviceManager, Settings);
+        RecordingCollectionViewModel = new DeviceCollectionViewModel(WindowsAudioFactory.Create(AudioDeviceKind.Recording), Settings);
 
         _trayIcon = new ShellNotifyIcon(new TaskbarIconSource(CollectionViewModel, Settings), Settings.TrayIconIdentity);
         Exit += (_, __) => _trayIcon.IsVisible = false;
         CollectionViewModel.TrayPropertyChanged += () => UpdateTrayTooltip();
 
-        _flyoutViewModel = new FlyoutViewModel(CollectionViewModel, () => _trayIcon.SetFocus(), Settings);
+        _flyoutViewModel = new FlyoutViewModel(CollectionViewModel, RecordingCollectionViewModel, () => _trayIcon.SetFocus(), Settings);
         FlyoutWindow = new FlyoutWindow(_flyoutViewModel);
         // Initialize the FlyoutWindow last because its Show/Hide cycle will pump messages, causing UI frames
         // to be executed, breaking the assumption that startup is complete.
@@ -317,6 +322,17 @@ public sealed partial class App : IDisposable
                 DisplayName = EarTrumpet.Properties.Resources.ContextMenuNoDevices,
                 IsEnabled = false,
             });
+        }
+
+        if (Settings.ShowRecordingDevices && RecordingCollectionViewModel.AllDevices.Count > 0)
+        {
+            ret.Add(new ContextMenuSeparator());
+            ret.AddRange(RecordingCollectionViewModel.AllDevices.OrderBy(x => x.DisplayName).Select(dev => new ContextMenuItem
+            {
+                DisplayName = dev.DisplayName,
+                IsChecked = dev.Id == RecordingCollectionViewModel.Default?.Id,
+                Command = new RelayCommand(() => dev.MakeDefaultDevice()),
+            }));
         }
 
         ret.AddRange(

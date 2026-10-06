@@ -11,6 +11,7 @@ public class AppSettings
 {
     public event EventHandler<bool> UseLegacyIconChanged;
     public event EventHandler<EventArgs> UseLogarithmicVolumeChanged;
+    public event EventHandler<bool> ShowRecordingDevicesChanged;
     public event Action FlyoutHotkeyTyped;
     public event Action MixerHotkeyTyped;
     public event Action SettingsHotkeyTyped;
@@ -194,6 +195,16 @@ public class AppSettings
     {
         get => _settings.Get("ShowFullMixerWindowOnStartup", false);
         set => _settings.Set("ShowFullMixerWindowOnStartup", value);
+    }
+
+    public bool ShowRecordingDevices
+    {
+        get => _settings.Get("ShowRecordingDevices", false);
+        set
+        {
+            _settings.Set("ShowRecordingDevices", value);
+            ShowRecordingDevicesChanged?.Invoke(this, value);
+        }
     }
 
     public Guid TrayIconIdentity

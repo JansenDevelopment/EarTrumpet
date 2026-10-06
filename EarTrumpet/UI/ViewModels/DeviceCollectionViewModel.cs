@@ -90,7 +90,7 @@ public class DeviceCollectionViewModel : BindableBase, IDisposable
             e.PropertyName == nameof(Default.IsMuted) ||
             e.PropertyName == nameof(Default.DisplayName))
         {
-            TrayPropertyChanged.Invoke();
+            TrayPropertyChanged?.Invoke();
         }
     }
 

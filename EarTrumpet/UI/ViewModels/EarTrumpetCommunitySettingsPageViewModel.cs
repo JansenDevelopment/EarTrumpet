@@ -35,6 +35,12 @@ public class EarTrumpetCommunitySettingsPageViewModel : SettingsPageViewModel
         set => _settings.ShowFullMixerWindowOnStartup = value;
     }
 
+    public bool ShowRecordingDevices
+    {
+        get => _settings.ShowRecordingDevices;
+        set => _settings.ShowRecordingDevices = value;
+    }
+
     public EarTrumpetCommunitySettingsPageViewModel(AppSettings settings) : base(null)
     {
         _settings = settings;
