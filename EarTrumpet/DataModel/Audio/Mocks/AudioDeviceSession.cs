@@ -67,6 +67,21 @@ internal class AudioDeviceSession : BindableBase, IAudioDeviceSessionInternal
         }
     }
 
+    public float GetVolumeScalar() => _volume;
+    public float GetVolumeLogarithmic() => _volume.LinearToLog();
+
+    public void SetVolumeScalar(float value)
+    {
+        value = value.Bound(0, 1f);
+        if (_volume != value)
+        {
+            _volume = value;
+            RaisePropertyChanged(nameof(Volume));
+        }
+    }
+
+    public void SetVolumeLogarithmic(float value) => SetVolumeScalar(value.LogToLinear());
+
     public float PeakValue1 { get; set; }
 
     public float PeakValue2 { get; set; }

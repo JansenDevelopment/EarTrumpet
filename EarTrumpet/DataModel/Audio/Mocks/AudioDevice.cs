@@ -1,5 +1,6 @@
 ﻿using EarTrumpet.DataModel.WindowsAudio;
 using EarTrumpet.DataModel.WindowsAudio.Internal;
+using EarTrumpet.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -51,6 +52,21 @@ internal class AudioDevice : BindableBase, IAudioDevice, IAudioDeviceInternal, I
             }
         }
     }
+
+    public float GetVolumeScalar() => _volume;
+    public float GetVolumeLogarithmic() => _volume.LinearToLog();
+
+    public void SetVolumeScalar(float value)
+    {
+        value = value.Bound(0, 1f);
+        if (_volume != value)
+        {
+            _volume = value;
+            RaisePropertyChanged(nameof(Volume));
+        }
+    }
+
+    public void SetVolumeLogarithmic(float value) => SetVolumeScalar(value.LogToLinear());
 
     public float PeakValue1 { get; set; }
     public float PeakValue2 { get; set; }
