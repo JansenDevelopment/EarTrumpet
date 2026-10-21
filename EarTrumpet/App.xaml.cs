@@ -135,8 +135,8 @@ public sealed partial class App : IDisposable
         Trace.WriteLine($"Detected User Session Switch: {e.Reason}");
         if (e.Reason == SessionSwitchReason.ConsoleConnect)
         {
-            var devManager = WindowsAudioFactory.Create(AudioDeviceKind.Playback);
-            devManager.RefreshAllDevices();
+            WindowsAudioFactory.Create(AudioDeviceKind.Playback).RefreshAllDevices();
+            WindowsAudioFactory.Create(AudioDeviceKind.Recording).RefreshAllDevices();
         }
     }
 
@@ -322,6 +322,11 @@ public sealed partial class App : IDisposable
                 DisplayName = EarTrumpet.Properties.Resources.ContextMenuNoDevices,
                 IsEnabled = false,
             });
+        }
+
+        if (Settings.ShowRecordingDevices)
+        {
+            RecordingCollectionViewModel.RefreshIfNoDefault();
         }
 
         if (Settings.ShowRecordingDevices && RecordingCollectionViewModel.AllDevices.Count > 0)

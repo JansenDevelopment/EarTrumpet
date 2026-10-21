@@ -217,6 +217,24 @@ public class DeviceCollectionViewModel : BindableBase, IDisposable
         _peakMeterTimer.Enabled = _isFlyoutVisible || _isFullWindowVisible;
     }
 
+    public void RefreshIfNoDefault()
+    {
+        // The device list can come up empty (e.g. audio not ready at logon) and never recover by itself.
+        if (Default != null)
+        {
+            return;
+        }
+
+        try
+        {
+            _deviceManager.RefreshAllDevices();
+        }
+        catch (Exception ex)
+        {
+            Trace.WriteLine($"DeviceCollectionViewModel RefreshIfNoDefault Failed: {ex}");
+        }
+    }
+
     public void OnTrayFlyoutShown()
     {
         _isFlyoutVisible = true;

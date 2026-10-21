@@ -344,6 +344,16 @@ internal class AudioDeviceManager : IMMNotificationClient, IAudioDeviceManager, 
         }
         _default = null;
 
+        // Don't stack notification callbacks when refreshing more than once.
+        try
+        {
+            _enumerator?.UnregisterEndpointNotificationCallback(this);
+        }
+        catch (Exception ex)
+        {
+            TraceLine($"{ex}");
+        }
+
         _enumerator = (IMMDeviceEnumerator)new MMDeviceEnumerator();
         _enumerator.RegisterEndpointNotificationCallback(this);
 
@@ -355,8 +365,8 @@ internal class AudioDeviceManager : IMMNotificationClient, IAudioDeviceManager, 
             device.GetId(out var deviceId);
             ((IMMNotificationClient)this).OnDeviceAdded(deviceId);
         }
-        this.OnDefaultDeviceChanged(EDataFlow.eRender, ERole.eMultimedia, null);
-        this.OnDefaultDeviceChanged(EDataFlow.eRender, ERole.eConsole, null);
+        this.OnDefaultDeviceChanged(Flow, ERole.eMultimedia, null);
+        this.OnDefaultDeviceChanged(Flow, ERole.eConsole, null);
 
         _dispatcher.Invoke((Action)(() =>
         {

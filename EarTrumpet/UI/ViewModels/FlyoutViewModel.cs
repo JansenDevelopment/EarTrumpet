@@ -353,6 +353,11 @@ public class FlyoutViewModel : BindableBase, IPopupHostViewModel, IFlyoutViewMod
     {
         if (State == FlyoutViewState.Hidden)
         {
+            if (_settings.ShowRecordingDevices)
+            {
+                _recordingViewModel.RefreshIfNoDefault();
+            }
+
             LastInput = inputType;
             ChangeState(FlyoutViewState.Opening);
         }
